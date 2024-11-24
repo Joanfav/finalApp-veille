@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=C:\Users\joanf\Cour\veilleTechno\tpFinal\Appfinal\veilleFinal\target\debug\build\mime_guess-4d8c038d7dbee91c\out\mime_types_generated.rs
