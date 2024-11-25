@@ -1,38 +1,144 @@
-.App {
-  text-align: center;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
+body {
+    margin: 0;
+}
+
+.background {
+  min-height: 100vh;
+  background: url('../src/image/sunset.jfif') no-repeat center;
+  position: relative;
+}
+
+.background::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(to top, #ffe4e1, transparent);
   pointer-events: none;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.backgroundHistorique {
+    background: rgb(255, 228, 225);
+    background: linear-gradient(180deg, rgba(255, 228, 225, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    padding: 20px;
+    overflow-x: auto; /* Active le défilement horizontal */
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.gallery-container {
+    display: flex;
+    flex-wrap: nowrap; /* Aligne les cartes sur une seule ligne */
+    gap: 20px; /* Espace entre les cartes */
+    width: calc(100% - 40px); /* Réduit la largeur pour éviter le débordement */
 }
 
-.App-link {
-  color: #61dafb;
+.gallery-card {
+    flex: 0 0 18%; /* Chaque carte occupe environ 18% de la largeur, ce qui permet d'en afficher 5 */
+    height: 250px; /* Augmenter la hauteur */
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.gallery-card:hover {
+    transform: scale(1.05); /* Agrandissement au survol */
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
 }
+
+.gallery-image {
+    width: 100%;
+    height: 70%;
+    object-fit: cover; /* Garde l'image proportionnelle */
+}
+
+.gallery-info {
+    height: 30%; /* Zone pour le texte */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.backgroundHistorique::-webkit-scrollbar {
+    display: none;
+}
+
+
+
+
+
+
+.containerImagePrincipal {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 60%;
+    height: 60vh;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    top: 70px;
+    margin: auto;
+    z-index: 10;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.image-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 70%;
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    background-color: #f8f8f8;
+    overflow: hidden;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.upload-button {
+    margin-top: 10px;
+}
+
+.sliders {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 10px;
+}
+
+.slider label {
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
+
+
