@@ -1,43 +1,127 @@
 import React, { useEffect, useState } from "react";
-import { fetchGallery, addGalleryItem } from "./providers/providerImage";
+import axios from "axios";
 import "./App.css";
 
 function App() {
     const [gallery, setGallery] = useState([]);
     const [error, setError] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [name, setName] = useState("");
+    const [rotation, setRotation] = useState(0);
+    const [brightness, setBrightness] = useState(100);
+    const [cropX, setCropX] = useState(0);
+    const [cropY, setCropY] = useState(0);
+    const [message, setMessage] = useState("");
+    const [fileName, setFileName] = useState("");
+    const [activeRotation, setActiveRotation] = useState(null);
 
-    const handleImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setSelectedImage(imageUrl);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!selectedImage) {
+            setMessage("Please select an image.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("rotation", rotation);
+        formData.append("brightness", brightness);
+        formData.append("crop_x", cropX);
+        formData.append("crop_y", cropY);
+        formData.append("file", selectedImage);
+
+        try {
+            const response = await fetch("http://localhost:8080/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                setMessage("Image uploaded successfully");
+                fetchGallery(); // Recharger la galerie
+            } else {
+                const text = await response.text();
+                console.error("Error response from server:", text);
+                setMessage("Error uploading image");
+            }
+        } catch (error) {
+            console.error("Error during fetch:", error);
+            setMessage("Error uploading image");
+        }
+    };
+
+    const handleTest = async (e) => {
+        e.preventDefault();
+
+        if (!selectedImage) {
+            setMessage("Please select an image.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("rotation", rotation);
+        formData.append("brightness", brightness);
+        formData.append("crop_x", cropX);
+        formData.append("crop_y", cropY);
+        formData.append("file", selectedImage);
+
+        try {
+            const response = await fetch("http://localhost:8080/testImage", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                const imageData = await response.text();  // Assuming the server sends back base64 string
+                setSelectedImage(imageData);  // Update the selected image with the transformed image
+                setMessage("Image transformation applied successfully.");
+            } else {
+                const text = await response.text();
+                console.error("Error response from server:", text);
+                setMessage("Error uploading image");
+            }
+        } catch (error) {
+            console.error("Error during fetch:", error);
+            setMessage("Error uploading image");
+        }
+    };
+
+
+
+    const fetchGallery = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/images");
+            setGallery(response.data);
+        } catch (error) {
+            console.error("Error fetching gallery:", error);
+            setError("Unable to fetch images.");
         }
     };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const data = await fetchGallery();
-                setGallery(data);
-            } catch (err) {
-                console.error("Error fetching gallery:", err);
-                setError("Impossible de charger la galerie.");
-            }
-        };
-
-        fetchData();
+        fetchGallery();
     }, []);
 
-    const handleAddItem = async () => {
-        const newItem = { name: "New Item", image_path: "/path/to/image" };
-        try {
-            const addedItem = await addGalleryItem(newItem);
-            setGallery((prevGallery) => [...prevGallery, addedItem]);
-        } catch (err) {
-            console.error("Error adding gallery item:", err);
-            setError("Impossible d'ajouter un élément à la galerie.");
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            setFileName(file.name);
+            setName(file.name);
+            const img = new Image();
+            img.onload = () => {
+                setCropX(img.width);
+                setCropY(img.height);
+            };
+            img.src = URL.createObjectURL(file);
         }
+    };
+
+    const handleRotationChange = (value) => {
+        setRotation(value);
+        setActiveRotation(value);
     };
 
     return (
@@ -46,51 +130,107 @@ function App() {
                 <div className="containerImagePrincipal">
                     <div className="image-preview">
                         {selectedImage ? (
-                            <img src={selectedImage} alt="Preview" className="preview-image"/>
+                            <img
+                                src={selectedImage instanceof File ? URL.createObjectURL(selectedImage) : `data:image/jpeg;base64,${selectedImage}`}
+                                alt="Preview"
+                                className="preview-image"
+                            />
                         ) : (
-                            <p>Aucune image sélectionnée</p>
+                            <p>No image selected</p>
                         )}
                     </div>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="upload-button"
-                    />
+
+                    <label className="button-ind">
+                        Choisir une image
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                        />
+                    </label>
+
                     <div className="sliders">
-                        <div className="slider">
+                        <div className="rotation-buttons">
                             <label>Rotation</label>
-                            <input type="range" min="0" max="360"/>
+                            <div>
+                                {[90, 180, 270, 0].map((value) => (
+                                    <button
+                                        key={value}
+                                        className={`button-rot ${
+                                            activeRotation === value ? "active" : ""
+                                        }`}
+                                        onClick={() => handleRotationChange(value)}
+                                    >
+                                        {value === 0 ? "0" : `${value}°`}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                         <div className="slider">
-                            <label>Luminosité</label>
-                            <input type="range" min="0" max="100"/>
+                            <label>Brightness</label>
+                            <div className="slider-container">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    className="slider-input"
+                                    onChange={(e) => setBrightness(Number(e.target.value))}
+                                />
+                            </div>
                         </div>
                         <div className="slider">
-                            <label>Redimensionnement</label>
-                            <input type="range" min="50" max="200"/>
+                            <label>Resize</label>
+                            <input
+                                type="number"
+                                value={cropX}
+                                placeholder="Crop X"
+                                onChange={(e) => setCropX(Number(e.target.value))}
+                            />
+                            <input
+                                type="number"
+                                value={cropY}
+                                placeholder="Crop Y"
+                                onChange={(e) => setCropY(Number(e.target.value))}
+                            />
                         </div>
                     </div>
+
+                    <input
+                        type="text"
+                        value={name}
+                        placeholder={fileName || "Enter name"}
+                        onChange={(e) => setName(e.target.value)}
+                        className="name-input"
+                    />
+
+                    <div className="boutton-div">
+                        <button onClick={handleTest} className="button-ind">Tester</button>
+                        <button onClick={handleSubmit} className="button-ind">Add to Gallery</button>
+                    </div>
+
+                    {message && <p>{message}</p>}
                 </div>
             </div>
             <div className="backgroundHistorique">
                 <div className="gallery-container">
-                    {gallery.map((item) => (
-                        <div
-                            key={item.id || item.name}
-                            className="gallery-card"
-                            onClick={() => alert(`Vous avez cliqué sur ${item.name}`)}
-                        >
-                            <img src={item.image_path} alt={item.name} className="gallery-image"/>
-                            <div className="gallery-info">
-                                <strong>{item.name}</strong>
+                    {gallery.length > 0 ? (
+                        gallery.map((item, index) => (
+                            <div key={index} className="gallery-card">
+                                <img
+                                    src={`data:image/jpeg;base64,${item.image}`}
+                                    alt={item.name}
+                                    className="gallery-image"
+                                />
+                                <div className="gallery-info">
+                                    <p>{item.name}</p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <p>No images in the gallery</p>
+                    )}
                 </div>
             </div>
-
-
         </div>
     );
 }
