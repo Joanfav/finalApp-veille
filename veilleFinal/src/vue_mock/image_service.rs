@@ -4,7 +4,7 @@ use crate::vue_mock::image_model::{Image, NewImage};
 use crate::establish_connection;
 use crate::vue_mock::schema::images::dsl::*;
 use image::{DynamicImage, ImageFormat};
-use base64::encode;
+use base64::{encode};
 use std::io::Cursor; // Import Cursor
 
 pub fn save_image(
@@ -62,8 +62,14 @@ pub fn test_image(
 pub fn apply_image_transformations(image: &Image) -> Result<String, image::ImageError> {
     let mut img = image::load_from_memory(&image.file_content)?;
 
-    // Appliquer les transformations
-    img = img.rotate90();
+
+    img = match image.rotation % 360 {
+        90 => img.rotate90(),
+        180 => img.rotate180(),
+        270 => img.rotate270(),
+        _ => img,
+    };
+
     img = reduce_brightness(&img, image.brightness);
 
     if let (Some(cx), Some(cy)) = (image.crop_x, image.crop_y) {
@@ -73,11 +79,7 @@ pub fn apply_image_transformations(image: &Image) -> Result<String, image::Image
     let mut transformed_content = Vec::new();
     let mut cursor = Cursor::new(&mut transformed_content);
     img.write_to(&mut cursor, ImageFormat::Jpeg)?;
-
-    // Convertir l'image en base64
-    let transformed_base64 = encode(&transformed_content);
-
-    Ok(transformed_base64)
+    Ok(encode(&transformed_content))
 }
 
 pub fn fetch_images_from_db() -> Result<Vec<serde_json::Value>, image::ImageError> {
@@ -86,6 +88,7 @@ pub fn fetch_images_from_db() -> Result<Vec<serde_json::Value>, image::ImageErro
     let fetched_images = images
         .load::<Image>(connection)
         .expect("Erreur lors du chargement des images");
+
 
     let transformed_images: Vec<serde_json::Value> = fetched_images
         .iter()

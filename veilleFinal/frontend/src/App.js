@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import axios from "axios";
 import "./App.css";
 
@@ -39,7 +39,7 @@ function App() {
 
             if (response.ok) {
                 setMessage("Image uploaded successfully");
-                fetchGallery(); // Recharger la galerie
+                fetchGallery();
             } else {
                 const text = await response.text();
                 console.error("Error response from server:", text);
@@ -58,7 +58,6 @@ function App() {
             setMessage("Please select an image.");
             return;
         }
-
         const formData = new FormData();
         formData.append("name", name);
         formData.append("rotation", rotation);
@@ -74,21 +73,14 @@ function App() {
             });
 
             if (response.ok) {
-                const imageData = await response.text();  // Assuming the server sends back base64 string
-                setSelectedImage(imageData);  // Update the selected image with the transformed image
-                setMessage("Image transformation applied successfully.");
-            } else {
-                const text = await response.text();
-                console.error("Error response from server:", text);
-                setMessage("Error uploading image");
+                const imageData = await response.text();
+                setSelectedImage(imageData);
             }
         } catch (error) {
             console.error("Error during fetch:", error);
-            setMessage("Error uploading image");
+            setMessage("Error applying image transformation.");
         }
     };
-
-
 
     const fetchGallery = async () => {
         try {
