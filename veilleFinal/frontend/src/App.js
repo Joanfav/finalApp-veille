@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
 import "./App.css";
+import ImageDetails from "./pages/ImageDetails";
 
 function App() {
     const [gallery, setGallery] = useState([]);
@@ -14,6 +15,16 @@ function App() {
     const [message, setMessage] = useState("");
     const [fileName, setFileName] = useState("");
     const [activeRotation, setActiveRotation] = useState(null);
+    const [selectedImageId, setSelectedImageId] = useState(null);
+
+    const handleImageClick = (id) => {
+        setSelectedImageId(id);
+    };
+
+    const closeImageDetails = () => {
+        setSelectedImageId(null);
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -40,6 +51,9 @@ function App() {
             if (response.ok) {
                 setMessage("Image uploaded successfully");
                 fetchGallery();
+                setRotation(0);
+                setBrightness(0);
+                setActiveRotation(null);
             } else {
                 const text = await response.text();
                 console.error("Error response from server:", text);
@@ -75,6 +89,9 @@ function App() {
             if (response.ok) {
                 const imageData = await response.text();
                 setSelectedImage(imageData);
+                setRotation(0);
+                setBrightness(0);
+                setActiveRotation(null);
             }
         } catch (error) {
             console.error("Error during fetch:", error);
@@ -163,9 +180,10 @@ function App() {
                             <div className="slider-container">
                                 <input
                                     type="range"
-                                    min="0"
+                                    min="-100"
                                     max="100"
                                     className="slider-input"
+                                    value={brightness}
                                     onChange={(e) => setBrightness(Number(e.target.value))}
                                 />
                             </div>
@@ -207,7 +225,10 @@ function App() {
                 <div className="gallery-container">
                     {gallery.length > 0 ? (
                         gallery.map((item, index) => (
-                            <div key={index} className="gallery-card">
+                            <div key={index}
+                                 className="gallery-card"
+                                 onClick={() => handleImageClick(item.id)}
+                            >
                                 <img
                                     src={`data:image/jpeg;base64,${item.image}`}
                                     alt={item.name}
@@ -223,6 +244,12 @@ function App() {
                     )}
                 </div>
             </div>
+            {selectedImageId && (
+                <ImageDetails
+                    imageId={selectedImageId}
+                    onClose={closeImageDetails}
+                />
+            )}
         </div>
     );
 }

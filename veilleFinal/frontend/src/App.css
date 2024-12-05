@@ -9,38 +9,39 @@ body {
 }
 
 .background {
-  min-height: 100vh;
-  background: url('../src/image/sunset.jfif') no-repeat center;
-  position: relative;
+    min-height: 100vh;
+    background: url('../src/image/sunset.jfif') no-repeat center;
+    position: relative;
 }
 
 .background::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 40%;
-  background: linear-gradient(to top, #ffe4e1, transparent);
-  pointer-events: none;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to top, #ffe4e1, transparent);
+    pointer-events: none;
 }
+
 .backgroundHistorique {
     background: rgb(255, 228, 225);
     background: linear-gradient(180deg, rgba(255, 228, 225, 1) 0%, rgba(255, 255, 255, 1) 100%);
     padding: 20px;
-    overflow-x: auto; /* Active le défilement horizontal */
+    overflow-x: auto;
 }
 
 .gallery-container {
     display: flex;
-    flex-wrap: nowrap; /* Aligne les cartes sur une seule ligne */
-    gap: 20px; /* Espace entre les cartes */
-    width: calc(100% - 40px); /* Réduit la largeur pour éviter le débordement */
+    flex-wrap: nowrap;
+    gap: 20px;
+    width: calc(100% - 40px);
 }
 
 .gallery-card {
-    flex: 0 0 18%; /* Chaque carte occupe environ 18% de la largeur, ce qui permet d'en afficher 5 */
-    height: 250px; /* Augmenter la hauteur */
+    flex: 0 0 18%;
+    height: 250px;
     background-color: white;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -125,33 +126,35 @@ body {
 input[type="file"] {
     display: none;
 }
+
 .boutton-div {
     justify-content: space-between;
     font-size: 4px;
 }
+
 .button-ind {
-   background: #FF4742;
-   border: 1px solid #FF4742;
-   border-radius: 6px;
-   box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
-   box-sizing: border-box;
-   color: #FFFFFF;
-   cursor: pointer;
-   display: inline-block;
-   font-family: nunito,roboto,proxima-nova,"proxima nova",sans-serif;
-   font-size: 12px;
-   font-weight: 800;
-   line-height: 16px;
-   min-height: 40px;
-   outline: 0;
-   padding: 12px 14px;
-   text-align: center;
-   text-rendering: geometricprecision;
-   text-transform: none;
-   user-select: none;
-   -webkit-user-select: none;
-   touch-action: manipulation;
-   vertical-align: middle;
+    background: #FF4742;
+    border: 1px solid #FF4742;
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 16px;
+    min-height: 40px;
+    outline: 0;
+    padding: 12px 14px;
+    text-align: center;
+    text-rendering: geometricprecision;
+    text-transform: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: middle;
     margin: 10px;
 }
 
@@ -175,7 +178,7 @@ input[type="file"] {
     color: #FFFFFF;
     cursor: pointer;
     display: inline-block;
-    font-family: nunito,roboto,proxima-nova,"proxima nova",sans-serif;
+    font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
     font-size: 10px;
     font-weight: 800;
     line-height: 16px;
@@ -213,6 +216,7 @@ input[type="file"] {
 /***********/
 /* SLIDER */
 /***********/
+
 .slider {
     display: flex;
     flex-direction: column;
@@ -233,7 +237,7 @@ input[type="file"] {
 }
 
 .slider-input {
-    -webkit-appearance: none; /* Supprime le style par défaut */
+    -webkit-appearance: none;
     appearance: none;
     width: 100%;
     height: 8px;
@@ -265,5 +269,38 @@ input[type="file"] {
     border-radius: 50%;
     background: #FFFFFF;
     border: 2px solid #FF4742;
+    cursor: pointer;
+}
+
+.image-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.image-details-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 5px 10px;
     cursor: pointer;
 }

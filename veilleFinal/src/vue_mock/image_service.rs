@@ -5,7 +5,7 @@ use crate::establish_connection;
 use crate::vue_mock::schema::images::dsl::*;
 use image::{DynamicImage, ImageFormat};
 use base64::{encode};
-use std::io::Cursor; // Import Cursor
+use std::io::Cursor;
 
 pub fn save_image(
     path_file: &str,
@@ -116,4 +116,36 @@ pub fn fetch_images_from_db() -> Result<Vec<serde_json::Value>, image::ImageErro
 
 fn reduce_brightness(image: &DynamicImage, value: i32) -> DynamicImage {
     image.brighten(value)
+}
+
+pub fn fetch_image_from_db(image_id: i32) -> Result<serde_json::Value, diesel::result::Error> {
+    let connection = &mut establish_connection();
+
+    let image = images.find(image_id).first::<Image>(connection)?;
+
+    match apply_image_transformations(&image) {
+        Ok(transformed_image) => Ok(json!({
+            "id": image.id,
+            "name": image.filepath,
+            "image": transformed_image,
+            "rotation": image.rotation,
+            "brightness": image.brightness,
+            "crop_x": image.crop_x,
+            "crop_y": image.crop_y,
+            "created_at": image.created_at
+        })),
+        Err(e) => {
+            eprintln!("Erreur lors des transformations: {}", e);
+            Ok(json!({
+                "id": image.id,
+                "name": image.filepath,
+                "image": null,
+                "rotation": image.rotation,
+                "brightness": image.brightness,
+                "crop_x": image.crop_x,
+                "crop_y": image.crop_y,
+                "created_at": image.created_at
+            }))
+        }
+    }
 }

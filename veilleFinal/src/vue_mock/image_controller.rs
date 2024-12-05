@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse, Responder};
 use actix_multipart::Multipart;
 use futures_util::stream::StreamExt;
 use crate::vue_mock::image_model::{NewImage};
-use crate::vue_mock::image_service::{save_image, fetch_images_from_db, test_image};
+use crate::vue_mock::image_service::{save_image, fetch_images_from_db, test_image, fetch_image_from_db};
 use base64::{decode};
 
 // Structure pour contenir les données du formulaire
@@ -18,7 +18,8 @@ pub struct ImageForm {
 pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.route("/upload", web::post().to(upload_image))
         .route("/testImage", web::post().to(test_image_controller))
-        .route("/images", web::get().to(get_images));
+        .route("/images", web::get().to(get_images))
+        .route("/getImages/{id}", web::get().to(get_image_detail));
 }
 
 async fn read_image(mut payload: Multipart) -> Result<NewImage, HttpResponse> {
@@ -125,6 +126,14 @@ pub async fn get_images() -> impl Responder {
 
     match images {
         Ok(images) => HttpResponse::Ok().json(images),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+pub async fn get_image_detail(id: web::Path<i32>) -> impl Responder {
+    let image =  fetch_image_from_db(id.into_inner());
+
+    match image {
+        Ok(image) => HttpResponse::Ok().json(image),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
