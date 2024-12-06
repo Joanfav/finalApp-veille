@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use crate::vue_mock::schema::images;
 
-#[derive(Queryable, Insertable, Selectable, serde::Serialize, Debug, Clone)]
+#[derive(Queryable, Insertable, Selectable, serde::Serialize, Debug, Clone, QueryableByName)]
 #[diesel(table_name = images)]
 pub struct Image {
     pub id: i32,

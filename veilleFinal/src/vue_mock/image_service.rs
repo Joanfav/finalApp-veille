@@ -1,4 +1,4 @@
-use serde_json::json;
+use serde_json::{json};
 use diesel::prelude::*;
 use crate::vue_mock::image_model::{Image, NewImage};
 use crate::establish_connection;
@@ -6,6 +6,11 @@ use crate::vue_mock::schema::images::dsl::*;
 use image::{DynamicImage, ImageFormat};
 use base64::{encode};
 use std::io::Cursor;
+use chrono::Utc;
+use diesel::associations::HasTable;
+use diesel::sql_query;
+use diesel::sql_types::Integer;
+use crate::vue_mock::schema::images;
 
 pub fn save_image(
     path_file: &str,
@@ -57,11 +62,8 @@ pub fn test_image(
     Ok(apply_image_transformations(&new_image)?)
 }
 
-
-
 pub fn apply_image_transformations(image: &Image) -> Result<String, image::ImageError> {
     let mut img = image::load_from_memory(&image.file_content)?;
-
 
     img = match image.rotation % 360 {
         90 => img.rotate90(),
@@ -88,7 +90,6 @@ pub fn fetch_images_from_db() -> Result<Vec<serde_json::Value>, image::ImageErro
     let fetched_images = images
         .load::<Image>(connection)
         .expect("Erreur lors du chargement des images");
-
 
     let transformed_images: Vec<serde_json::Value> = fetched_images
         .iter()
@@ -148,4 +149,83 @@ pub fn fetch_image_from_db(image_id: i32) -> Result<serde_json::Value, diesel::r
             }))
         }
     }
+}
+
+pub fn fetch_images_by_size(
+    crop_x_param: i32,
+    crop_y_param: i32,
+) -> Result<Vec<serde_json::Value>, diesel::result::Error> {
+    let connection = &mut establish_connection();
+
+    let fetched_images = sql_query(
+        "SELECT id, filepath, file_content, rotation, brightness, crop_x, crop_y, created_at
+         FROM images WHERE (crop_x < 300) AND (crop_y < 300)"
+    )
+        .bind::<Integer, _>(crop_x_param)
+        .bind::<Integer, _>(crop_y_param)
+        .load::<Image>(connection)?;
+
+    let transformed_images: Vec<serde_json::Value> = fetched_images
+        .iter()
+        .map(|image| {
+            match apply_image_transformations(image) {
+                Ok(transformed_image) => json!( {
+                    "id": image.id,
+                    "name": image.filepath,
+                    "image": transformed_image,
+                }),
+                Err(e) => {
+                    eprintln!("Erreur lors de l'application des transformations: {}", e);
+                    json!( {
+                        "id": image.id,
+                        "name": image.filepath,
+                        "image": null
+                    })
+                }
+            }
+        })
+        .collect();
+
+    Ok(transformed_images)
+}
+
+
+pub fn fetch_images_by_size_petite() -> Result<Vec<serde_json::Value>, diesel::result::Error> {
+    fetch_images_by_size(300, 300)
+}
+
+
+pub fn fetch_images_by_date() -> Result<Vec<serde_json::Value>, diesel::result::Error> {
+    let connection = &mut establish_connection();
+    let current_date = Utc::now().naive_utc().date();
+    let start_of_day = current_date.and_hms_opt(0, 0, 0).unwrap();
+    let end_of_day = current_date.and_hms_opt(23, 59, 59).unwrap();
+
+    let filtered_images: Vec<Image> = images::table
+        .filter(images::created_at.ge(start_of_day))
+        .filter(images::created_at.le(end_of_day))
+        .load::<Image>(connection)?;
+
+    let transformed_images: Vec<serde_json::Value> = filtered_images
+        .iter()
+        .map(|image| {
+            match apply_image_transformations(image) {
+                Ok(transformed_image) => json!({
+                    "id": image.id,
+                    "name": image.filepath,
+                    "image": transformed_image,
+                }),
+                Err(e) => {
+                    eprintln!("Erreur lors de l'application des transformations: {}", e);
+                    json!({
+                        "id": image.id,
+                        "name": image.filepath,
+                        "image": null
+                    })
+                }
+            }
+        })
+        .collect();
+
+    Ok(transformed_images)
 }

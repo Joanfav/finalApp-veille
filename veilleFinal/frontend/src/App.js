@@ -16,6 +16,7 @@ function App() {
     const [fileName, setFileName] = useState("");
     const [activeRotation, setActiveRotation] = useState(null);
     const [selectedImageId, setSelectedImageId] = useState(null);
+    const [groupedImages, setGroupedImages] = useState({});
 
     const handleImageClick = (id) => {
         setSelectedImageId(id);
@@ -50,7 +51,7 @@ function App() {
 
             if (response.ok) {
                 setMessage("Image uploaded successfully");
-                fetchGallery();
+                fetchGallerys();
                 setRotation(0);
                 setBrightness(0);
                 setActiveRotation(null);
@@ -99,18 +100,8 @@ function App() {
         }
     };
 
-    const fetchGallery = async () => {
-        try {
-            const response = await axios.get("http://localhost:8080/images");
-            setGallery(response.data);
-        } catch (error) {
-            console.error("Error fetching gallery:", error);
-            setError("Unable to fetch images.");
-        }
-    };
-
     useEffect(() => {
-        fetchGallery();
+        fetchGallerys();
     }, []);
 
     const handleImageChange = (event) => {
@@ -131,6 +122,26 @@ function App() {
     const handleRotationChange = (value) => {
         setRotation(value);
         setActiveRotation(value);
+    };
+
+    const fetchGallerys = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/images");
+            const response2 = await axios.get("http://localhost:8080/imagesByDate");
+            const response3 = await axios.get("http://localhost:8080/imagesBySize_petit");
+
+            const grouped = {
+                allPhotos: response.data,
+                recent: response2.data,
+                smallSize: response3.data,
+            };
+            console.log(grouped);
+            setGroupedImages(grouped);
+
+        } catch (error) {
+            console.error("Error fetching images:", error);
+            setError("Unable to fetch images.");
+        }
     };
 
     return (
@@ -221,27 +232,41 @@ function App() {
                     {message && <p>{message}</p>}
                 </div>
             </div>
-            <div className="backgroundHistorique">
-                <div className="gallery-container">
-                    {gallery.length > 0 ? (
-                        gallery.map((item, index) => (
-                            <div key={index}
-                                 className="gallery-card"
-                                 onClick={() => handleImageClick(item.id)}
-                            >
-                                <img
-                                    src={`data:image/jpeg;base64,${item.image}`}
-                                    alt={item.name}
-                                    className="gallery-image"
-                                />
-                                <div className="gallery-info">
-                                    <p>{item.name}</p>
-                                </div>
+            <div>
+                <h1 className="bg-titre">Historique</h1>
+                <div className="backgroundHistorique">
+                    {error && <p>{error}</p>}
+                    {["recent", "smallSize", "allPhotos"].map((category) => (
+                        <div key={category}>
+                            <h2>
+                                {category === "recent"
+                                    ? "Récemment ajoutées"
+                                    : category === "smallSize"
+                                        ? "Petite taille"
+                                        : "Toutes les photos"}
+                            </h2>
+                            <div className="gallery-container">
+                                {groupedImages[category]?.length > 0 ? (
+                                    groupedImages[category].map((item, index) => (
+                                        <div key={index} className="gallery-card"
+                                        onClick={handleImageClick.bind(null, item.id)}
+                                        >
+                                            <img
+                                                src={`data:image/jpeg;base64,${item.image}`}
+                                                alt={item.name}
+                                                className="gallery-image"
+                                            />
+                                            <div className="gallery-info">
+                                                <p>{item.name}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>Aucune image dans cette catégorie</p>
+                                )}
                             </div>
-                        ))
-                    ) : (
-                        <p>No images in the gallery</p>
-                    )}
+                        </div>
+                    ))}
                 </div>
             </div>
             {selectedImageId && (
@@ -252,6 +277,15 @@ function App() {
             )}
         </div>
     );
+    {
+        selectedImageId && (
+            <ImageDetails
+                imageId={selectedImageId}
+                onClose={closeImageDetails}
+            />
+        )
+        ;
+    }
 }
 
 export default App;

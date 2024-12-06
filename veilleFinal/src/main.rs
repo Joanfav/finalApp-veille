@@ -4,7 +4,13 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::sql_query;
 use dotenvy::dotenv;
-use std::env;
+use std::{env, fs};
+use chrono::Utc;
+use vue_mock::image_model::NewImage;
+use crate::vue_mock::schema::images;
+
+use diesel::insert_into;
+
 mod vue_mock;
 
 #[actix_web::main]
@@ -63,6 +69,32 @@ fn initialize_database(connection: &mut PgConnection) {
     sql_query(create_table_query)
         .execute(connection)
         .expect("Erreur lors de la création de la table `images`");
+
+    let image_path3 = "image/pp2.jpeg";
+
+    let file_content3 = match fs::read(image_path3) {
+        Ok(content3) => content3,
+        Err(err) => panic!("Erreur lors de la lecture du fichier image : {:?}", err),
+    };
+
+    let mut connection = establish_connection();
+
+
+    let image3 = NewImage {
+        filepath: image_path3.to_string(),
+        file_content: file_content3,
+        created_at: Utc::now().naive_utc() - chrono::Duration::days(5),
+        rotation: 0,
+        brightness: 0,
+        crop_x: Option::from(150),
+        crop_y: Option::from(150),
+    };
+
+    insert_into(images::table)
+        .values(&[image3])
+        .execute(&mut connection)
+        .expect("Error inserting images into database");
+
 }
 
 /// Fonction pour établir la connexion à la base de données.

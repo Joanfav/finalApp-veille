@@ -29,7 +29,8 @@ body {
     background: rgb(255, 228, 225);
     background: linear-gradient(180deg, rgba(255, 228, 225, 1) 0%, rgba(255, 255, 255, 1) 100%);
     padding: 20px;
-    overflow-x: auto;
+    overflow-x: scroll;
+    white-space: nowrap;
 }
 
 .gallery-container {
@@ -303,4 +304,7 @@ input[type="file"] {
     border-radius: 15px;
     padding: 5px 10px;
     cursor: pointer;
+}
+.bg-titre{
+    background: #FFE4E1;
 }
